@@ -1,17 +1,24 @@
-/**
- * Metro configuration for React Native
- * https://github.com/facebook/react-native
- *
- * @format
- */
+const path = require('path');
+const root = path.resolve(__dirname, '..');
 
 module.exports = {
+  resolver: {
+    sourceExts: [
+	"js",
+	"jsx",
+	"ts",
+	"tsx"
+    ],
+  },
   transformer: {
     getTransformOptions: async () => ({
       transform: {
-        experimentalImportSupport: false,
+        experimentalImportSupport: true,
         inlineRequires: true,
       },
     }),
   },
-};
+  projectRoot : __dirname,
+  watchFolders: [root],
+
+}
