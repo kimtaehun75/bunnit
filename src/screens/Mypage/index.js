@@ -1,19 +1,21 @@
 import React from "react";
 import { Text , View } from 'react-native';
 import { SafeAreaView } from "react-native-safe-area-context";
+import S from "@styles";
 
 const MyPagecreen = (props) => {
     const { navigation } = props;
      
     return (
-        <SafeAreaView style={{ flexGrow : 1 , backgroundColor : '#ffffff'}}>
+        <SafeAreaView style={{ flex : 1, backgroundColor : '#ffffff'}}>
             <View
                 style={{
+                    flex : 1,
                     justifyContent: "center",
                     alignItems: "center",
                 }}
             >
-                <Text>Mypage</Text>
+                <Text style={{color : S.COLOR.BASIC}}>Mypage</Text>
             </View>
         </SafeAreaView>
     )

@@ -4,6 +4,9 @@
   "private": true,
   "scripts": {
     "android": "react-native run-android",
+    "android-release": "react-native run-android --variant=release",
+    "android-bundle": "cd android && gradlew bundleRelease",
+    "android-apk": "cd android && gradlew assembleRelease",
     "ios": "react-native run-ios",
     "start": "react-native start --reset-cache",
     "start8089": "react-native start --port 8089 --reset-cache",
@@ -17,6 +20,7 @@
     "@react-navigation/bottom-tabs": "^6.3.2",
     "@react-navigation/native": "^6.0.11",
     "@react-navigation/native-stack": "^6.7.0",
+    "date-fns": "^2.28.0",
     "react": "18.0.0",
     "react-native": "0.69.1",
     "react-native-gesture-handler": "^2.5.0",

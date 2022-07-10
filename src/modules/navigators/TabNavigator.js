@@ -12,6 +12,8 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import FontAwesomeIcon5 from 'react-native-vector-icons/FontAwesome5';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome';
 
+import S from '@styles';
+
 const tabBarListeners = ({ navigation, route }) => ({
     tabPress: () => navigation.navigate(route.name),
 });
@@ -70,8 +72,8 @@ export default TabNavigator = () => {
                 component={HomeStackScreen}
                 options={{
                     headerShown : false,
-                    tabBarLabel : ({color , focused}) => <Text style={{fontWeight : focused ? 'bold' : 'normal' , fontSize : 12}}>HOME</Text>,
-                    tabBarIcon : ({color , focused}) => <MaterialCommunityIcons name={focused ? `home` : `home-outline`} size={30} />
+                    tabBarLabel : ({color , focused}) => <Text style={{fontWeight : focused ? 'bold' : 'normal' , fontSize : 12, color : focused ? S.COLOR.FOCUS : S.COLOR.NONE_FOCUS}}>HOME</Text>,
+                    tabBarIcon : ({color , focused}) => <MaterialCommunityIcons name={focused ? `home` : `home-outline`} color={focused ? S.COLOR.FOCUS : S.COLOR.NONE_FOCUS } size={30} />
                 }}
                 listeners={tabBarListeners}
             ></Tab.Screen>
@@ -80,8 +82,8 @@ export default TabNavigator = () => {
                 component={CalendarStackScreen}
                 options={{
                     headerShown : false,
-                    tabBarLabel : ({color , focused}) => <Text style={{fontWeight : focused ? 'bold' : 'normal', fontSize : 12}}>CALENDAR</Text>,
-                    tabBarIcon : ({color , focused}) => <FontAwesomeIcon5 name={`calendar`} solid={focused ? true : false} size={20} />
+                    tabBarLabel : ({color , focused}) => <Text style={{fontWeight : focused ? 'bold' : 'normal', fontSize : 12, color : focused ? S.COLOR.FOCUS : S.COLOR.NONE_FOCUS}}>CALENDAR</Text>,
+                    tabBarIcon : ({color , focused}) => <FontAwesomeIcon5 name={`calendar`} solid={focused ? true : false} color={focused ? S.COLOR.FOCUS : S.COLOR.NONE_FOCUS } size={20} />
                 }} 
                 listeners={tabBarListeners}
             />
@@ -90,8 +92,8 @@ export default TabNavigator = () => {
                 component={LibraryStackScreen}
                 options={{
                     headerShown : false,
-                    tabBarLabel : ({color , focused}) => <Text style={{fontWeight : focused ? 'bold' : 'normal', fontSize : 12}}>LIBRARY</Text>,
-                    tabBarIcon : ({color , focused}) => <FontAwesomeIcon5 name={`dumbbell`} size={20} />
+                    tabBarLabel : ({color , focused}) => <Text style={{fontWeight : focused ? 'bold' : 'normal', fontSize : 12, color : focused ? S.COLOR.FOCUS : S.COLOR.NONE_FOCUS}}>LIBRARY</Text>,
+                    tabBarIcon : ({color , focused}) => <FontAwesomeIcon5 name={`dumbbell`} color={focused ? S.COLOR.FOCUS : S.COLOR.NONE_FOCUS } size={20} />
                 }}
                 listeners={tabBarListeners} 
             />
@@ -100,8 +102,8 @@ export default TabNavigator = () => {
                 component={MyPageStackScreen}
                 options={{
                     headerShown : false,
-                    tabBarLabel : ({color , focused}) => <Text style={{fontWeight : focused ? 'bold' : 'normal', fontSize : 12}}>MY PAGE</Text>,
-                    tabBarIcon : ({color , focused}) => <MaterialCommunityIcons name={focused ? `account` : `account-outline`} size={30} />
+                    tabBarLabel : ({color , focused}) => <Text style={{fontWeight : focused ? 'bold' : 'normal', fontSize : 12, color : focused ? S.COLOR.FOCUS : S.COLOR.NONE_FOCUS}}>MY PAGE</Text>,
+                    tabBarIcon : ({color , focused}) => <MaterialCommunityIcons name={focused ? `account` : `account-outline`} color={focused ? S.COLOR.FOCUS : S.COLOR.NONE_FOCUS } size={30} />
                 }}
                 listeners={tabBarListeners} 
             />

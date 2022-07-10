@@ -22,8 +22,11 @@ module.exports = {
           '@screens': './src/screens',
           '@assets': './src/assets',
           '@navigators': './src/modules/navigators',
+          '@utils': './src/utils',
+          '@styles': './src/styles',
         },
       },
     ],
+    'react-native-reanimated/plugin',
   ],
 };
