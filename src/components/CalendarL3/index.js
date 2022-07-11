@@ -139,36 +139,6 @@ const CalendarL3 = ({initDate}) => {
 
     const viewabilityConfigCallbackPairs = React.useRef(_viewabilityConfig)
 
-    // const onGestureViewableItemsChanged = ({
-    //     viewableItems,
-    //     changed
-    //   }) => {
-    //     const visibleDate = changed?.filter((item) => item.isViewable);
-    //     let visibleIndex = visibleDate?.map((element) => {
-    //         return element.index
-    //     })
-    //     if (visibleIndex.includes([0,weekItems.length])) {
-    //         setScrollEnabled(false);
-    //     }
-    //   };
-
-    // const _gestureViewabilityConfig = [
-    //     {
-    //         viewabilityConfig : {
-    //             waitForInteraction : true,
-    //             itemVisiblePercentThreshold: 50,
-    //         },
-    //         onViewableItemsChanged : onGestureViewableItemsChanged,
-    //     },
-    //     {
-    //         viewabilityConfig : {
-    //             waitForInteraction : true,
-    //             viewAreaCoveragePercentThreshold : 50,
-    //         },
-    //         onViewableItemsChanged : onGestureViewableItemsChanged,
-    // }]
-
-    // const gestureViewabilityConfigCallbackPairs = React.useRef(_gestureViewabilityConfig)
 
     const gesture = Gesture.Tap().onStart(() => {
         // setWeekMode(!weekMode);
