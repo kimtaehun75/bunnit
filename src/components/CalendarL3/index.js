@@ -1,6 +1,7 @@
 import React , { useCallback } from "react";
 import { GestureHandlerRootView , GestureDetector , Gesture, PanGestureHandler } from "react-native-gesture-handler";
-import { Alert, FlatList, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView as GestureHandlerScrollView , FlatList as GesutreFlatList} from 'react-native-gesture-handler'
+import { Alert, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from "react-native-safe-area-context";
 import Animated , { useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated";
 
@@ -16,28 +17,15 @@ const CalendarL3 = ({initDate}) => {
 
     const [currentDate , setCurrentDate] = React.useState(initDate ?? new Date());
     const [selectDate , setSelectDate] = React.useState();
+    const [calendarHeight , setCalendarHeight] = React.useState(0);
     const [weekMode , setWeekMode] = React.useState(false);
+    const [scrollEnabeld , setScrollEnabled] = React.useState(true);
     const [range , setRange] = React.useState(1);
 
-    React.useEffect(() => {
-        const items = initialCalendarItems;
-        let findIndex;
-        if (weekMode) {
-            findIndex = items[`weekItems`].flat().findIndex((item) => item.isCurrentMonth && item.date === convertCalendarDate(currentDate));
-            findIndex = parseInt(findIndex/7);
-        }
-        else {
-            findIndex = items[`monthItems`].flat().find((item) => item.isCurrentMonth && item.date === convertCalendarDate(currentDate))[`monthIndex`];
-        }
-        setTimeout(() => {
-            calendarRef?.current?.scrollToIndex({ index: findIndex, animated: false });
-        }, 1000);
-        
-    }
-    , [weekMode]);
+    const isWeekMode = useSharedValue(false);
 
     const initialCalendarItems = React.useMemo(() => {
-        const calendars = {};
+        let calendars = {};
         const monthItems = [];
         const weekItems = [];
         const date = new Date(initDate ?? new Date());
@@ -46,7 +34,6 @@ const CalendarL3 = ({initDate}) => {
         date.setMonth(date.getMonth() - range*12/2)
         date.setDate(1);
 
-        let weekIndex = 0;
         for (let i = 0; i < range*12; i++) {
             const items = [];
             // 첫 주 요일 계산
@@ -66,6 +53,7 @@ const CalendarL3 = ({initDate}) => {
                     day : date.getDate(),
                     isCurrentMonth: true,
                     week : getWeekOfMonth(date),
+                    lastDate : currentLastDate.getDate() === date.getDate(), 
                 });
                 date.setDate(date.getDate() + 1);
             }
@@ -104,7 +92,7 @@ const CalendarL3 = ({initDate}) => {
             date.setDate(1);
         }
 
-        calendars.monthItems = monthItems;
+        calendars = monthItems;
         calendars.weekItems = weekItems;
 
         return calendars;
@@ -125,8 +113,11 @@ const CalendarL3 = ({initDate}) => {
             return {key : item.key , index : item.index}
         })
         const dates = date?.[0]?.key.toString()?.match(/\d{4}-\d{2}-\d{2}/g);
+        // check weekMode
+        const weekMode = date?.[0]?.key.split('_')?.[0];
         if (dates?.[0]) {
             setCurrentDate(new Date(dates?.[0]));
+            // if (weekMode) setScrollEnabled(false);
         }
       };
 
@@ -148,9 +139,60 @@ const CalendarL3 = ({initDate}) => {
 
     const viewabilityConfigCallbackPairs = React.useRef(_viewabilityConfig)
 
+    // const onGestureViewableItemsChanged = ({
+    //     viewableItems,
+    //     changed
+    //   }) => {
+    //     const visibleDate = changed?.filter((item) => item.isViewable);
+    //     let visibleIndex = visibleDate?.map((element) => {
+    //         return element.index
+    //     })
+    //     if (visibleIndex.includes([0,weekItems.length])) {
+    //         setScrollEnabled(false);
+    //     }
+    //   };
+
+    // const _gestureViewabilityConfig = [
+    //     {
+    //         viewabilityConfig : {
+    //             waitForInteraction : true,
+    //             itemVisiblePercentThreshold: 50,
+    //         },
+    //         onViewableItemsChanged : onGestureViewableItemsChanged,
+    //     },
+    //     {
+    //         viewabilityConfig : {
+    //             waitForInteraction : true,
+    //             viewAreaCoveragePercentThreshold : 50,
+    //         },
+    //         onViewableItemsChanged : onGestureViewableItemsChanged,
+    // }]
+
+    // const gestureViewabilityConfigCallbackPairs = React.useRef(_gestureViewabilityConfig)
+
+    const gesture = Gesture.Tap().onStart(() => {
+        // setWeekMode(!weekMode);
+    });
+
+    const onScroll = ({nativeEvent}) => {
+        if(isLeft(nativeEvent) || isRight(nativeEvent)){
+            setScrollEnabled(false);
+        } else {
+            setScrollEnabled(true);
+        }
+    }
+
+    const isRight = ({layoutMeasurement, contentOffset, contentSize}) => {
+        return layoutMeasurement.width + contentOffset.x >= contentSize.width;
+     }
+     
+     
+    const isLeft = ({layoutMeasurement, contentOffset, contentSize}) => {
+        return contentOffset.x >= 0;
+     }
+
     return (
         <SafeAreaView style={{ flex : 1, backgroundColor : '#ffffff'}}>
-            {/* <Ball /> */}
             <View>
                 {/* 달력 헤더 */}
                 <View
@@ -163,7 +205,7 @@ const CalendarL3 = ({initDate}) => {
                 >
                     <Text style={{ fontSize : 15, color : '#3c4e5c' ,fontWeight : 'bold' }}>{convertCalendarHeader?.(currentDate)}</Text>
                     <TouchableOpacity onPress={() => {
-                        setWeekMode(!weekMode);
+                        setWeekMode(!weekMode)
                     }}><MaterialCommunityIcons name={weekMode ? `chevron-down` : `chevron-up`} size={20} color={`#0e0e05`}/></TouchableOpacity>
                 </View>
                 <View
@@ -184,84 +226,137 @@ const CalendarL3 = ({initDate}) => {
                     <Text style={{ fontSize : 10, color : `#62b4ff` , fontWeight : 'bold' }}>토</Text>
                 </View>
             </View>
-            <FlatList
-                ref={calendarRef}
-                horizontal
-                pagingEnabled
-                contentContainerStyle={{ flexGrow : 1 , backgroundColor : '#ffffff' ,}}
-                // showsHorizontalScrollIndicator={false}
-                // initialScrollIndex={weekMode ? initialCalendarItems['weekItems'].length/2+1 : initialCalendarItems['monthItems'].length/2+1}
-                initialNumToRender={range*12*6}
-                // snapToInterval={S.width} // Adjust to your content width
-                // decelerationRate="fast"
-                // snapToAlignment="start"
-                viewabilityConfigCallbackPairs={viewabilityConfigCallbackPairs.current}
-                data={initialCalendarItems[weekMode ? 'weekItems' : 'monthItems']}
-                extraData={weekMode}
-                onScrollToIndexFailed={(info) => {
-                    const wait = new Promise(resolve => setTimeout(resolve, 500));
-                    wait.then(() => {
-                        calendarRef?.current?.scrollToIndex({ index: info.index, animated: true });
-                    });
-                }}
-                renderItem={({ item }) => {
-                    return (
-                        <GestureHandlerRootView style={{width : S.width}}>
-                            {/* <GestureDetector gesture={gesture}> */}
-                                <FlatList
-                                    ref={CalendarConfigRef}
-                                    data={item}
-                                    numColumns={7}
-                                    showsHorizontalScrollIndicator={false}
-                                    renderItem={(element) => {
-                                        return (
-                                            <TouchableOpacity
-                                                style={{
-                                                    flex : 1/7,
-                                                    margin : 2,
-                                                }}
-                                                onPress={() => {
-                                                    if (element.item.isCurrentMonth) handlePressDay(element.item.date)
-                                                }}
-                                            >
-                                                <View style={{
-                                                    paddingVertical : 15,
-                                                    backgroundColor : element.item.date == selectDate ? '#90b4ff' : 'transparent',
-                                                    borderRadius : 30,
-                                                    alignItems : 'center',
-                                                    justifyContent : 'center',
-                                                    borderColor : element.item.date == selectDate ? '#1ec2f3' : '#ffffff',
-                                                }}>
-                                                    <Text style={{
-                                                        fontSize : 10,
-                                                        fontWeight : element.item.date == selectDate ? 'bold' : 'normal',
-                                                        color : 
-                                                            element.item.date == selectDate ? '#ffffff' :
-                                                            element.item.isCurrentMonth ? '#555555' :
-                                                            '#e2e8ed',
-                                                    }}>{element.item.day}</Text>
-                                                </View>
-                                            </TouchableOpacity>
-                                        )
-                                    }}
-                                />
-                            {/* </GestureDetector> */}
-                        </GestureHandlerRootView>
-                    )
-                }}
-                keyExtractor={(item, index) => {
-                    let key;
-                    item.forEach((element) => {
-                        if (element.isCurrentMonth && element.week == 1 && element.day == 1) {
-                            key = `${element.date}_${index}`;
-                        }
-                    })
-                    if (!key) {
-                        key = `${item[0]?.date}_${index}`;
-                    }
-                    return `${weekMode ? `weekMode_` : ``}${key}`;
-                }}
-            />
+            <GestureHandlerRootView style={{width : S.width , }}>
+                <GestureDetector 
+                    gesture={gesture}
+                >
+                    <>
+                        <GesutreFlatList
+                            ref={calendarRef}
+                            horizontal
+                            pagingEnabled
+                            nestedScrollEnabled
+                            contentContainerStyle={[{ backgroundColor : '#ffffff' , height : weekMode ? 60 : 300 ,} , ]}
+                            showsHorizontalScrollIndicator={false}
+                            initialScrollIndex={initialCalendarItems.length/2+1}
+                            initialNumToRender={range*12*6}
+                            onLayout={(event) => {
+                                setCalendarHeight(event.nativeEvent.layout.height);
+                            }}
+                            viewabilityConfigCallbackPairs={viewabilityConfigCallbackPairs.current}
+                            data={initialCalendarItems}
+                            renderItem={({ item }) => {
+                                // 주 단위 객체
+                                let weekItems = [];
+                                const copyItems = item.slice();
+                                while (copyItems.length > 0) {
+                                    weekItems.push(copyItems.splice(0, 7));
+                                }
+
+                                // find current date
+                                const selectedDate = weekItems.findIndex((week) => {
+                                    return week.find((day) => {
+                                        return day.date === selectDate;
+                                    })
+                                })
+
+                                return (
+                                    <GestureHandlerScrollView
+                                        // scrollEnabled={scrollEnabeld}
+                                        showsHorizontalScrollIndicator={false}
+                                        // onScroll={onScroll}
+                                        initialScrollIndex={selectedDate ?? 0}
+                                        pagingEnabled
+                                        nestedScrollEnabled
+                                        horizontal={weekMode}
+                                        style={{
+                                            width : S.width,
+                                            backgroundColor : '#ffffff',
+                                        }}
+                                        keyExtractor={(item, index) => `${index}`}
+                                    >
+                                        {weekItems.map((weekItem, index) => {
+                                            return (
+                                                <View 
+                                                    style={{
+                                                        width : S.width,
+                                                        height : item.length < 42 ? 60 : 50,
+                                                        flexDirection : 'row',
+                                                        flexWrap : 'wrap',
+                                                        backgroundColor : '#ffffff',
+                                                    }}
+                                                >
+                                                    {weekItem.map((element, index) => {
+                                                        return (
+                                                            <TouchableOpacity
+                                                                style={{
+                                                                    width : S.width / 7,
+                                                                    alignItems : 'center',
+                                                                    justifyContent : 'center',
+                                                                }}
+                                                                onPress={() => {
+                                                                    if (element.isCurrentMonth) handlePressDay(element.date)
+                                                                }}
+                                                            >
+                                                                <View 
+                                                                    style={{
+                                                                        alignItems : 'center',
+                                                                        justifyContent : 'center',
+                                                                        backgroundColor : element.date == selectDate ? '#90b4ff' : 'transparent',
+                                                                        borderColor : element.date == selectDate ? '#1ec2f3' : '#ffffff',
+                                                                        borderRadius : 30,
+                                                                        height : 30,
+                                                                        width : 30,
+                                                                    }}
+                                                                >
+                                                                    <Text style={{
+                                                                        fontSize : 10,
+                                                                        fontWeight : element.date == selectDate ? 'bold' : 'normal',
+                                                                        color : 
+                                                                            element.date == selectDate ? '#ffffff' :
+                                                                            element.isCurrentMonth ? '#555555' :
+                                                                            '#e2e8ed',
+                                                                    }}>{element.day}</Text>
+                                                                </View>
+                                                            </TouchableOpacity>
+                                                        )
+                                                    })}
+                                             </View>
+                                            )
+                                        })}
+                                    </GestureHandlerScrollView>
+                                )
+                            }}
+                            keyExtractor={(item, index) => {
+                                let key;
+                                item.forEach((element) => {
+                                    if ((element.isCurrentMonth && element.week == 1 && element.day == 1) || element.lastDate) {
+                                        key = `${element.date}_${index}`;
+                                    }
+                                })
+                                if (!key) {
+                                    key = `${item[0]?.date}_${index}`;
+                                }
+                                return `${key}`;
+                            }}
+                        />
+                        <GestureDetector 
+                            gesture={gesture}
+                        >
+                            <View
+                                style={{
+                                    borderTopWidth : 1,
+                                    borderTopColor : '#d8d8ff',
+                                    height : S.height,
+                                    backgroundColor : '#d9d9d9',
+                                }}
+                            >
+                                <Text style={{color : S.COLOR.BASIC}}>Bottom Sheet</Text>
+                            </View>
+                        </GestureDetector>
+                    </>
+                </GestureDetector>
+            </GestureHandlerRootView>
         </SafeAreaView>
     )
 }
